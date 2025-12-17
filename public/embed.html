@@ -1225,7 +1225,7 @@
       <div class="cc-modal">
         <div class="cc-modal-header">
           <div class="cc-modal-title">SUBTITLE SETTINGS</div>
-          <button class="cc-modal-close" id="ccModalClose"></button>
+          <button class="cc-modal-close" id="ccModalClose" style="background:none;border:none;color:#FFB800;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1;">✕</button>
         </div>
 
         <div class="cc-preview" id="ccPreview"></div>
@@ -1268,6 +1268,11 @@
           </div>
 
           <div class="cc-control-group">
+            <label class="cc-control-label">Background Color</label>
+            <div class="cc-color-picker" id="bgColorPicker"></div>
+          </div>
+
+          <div class="cc-control-group">
             <label class="cc-control-label">Background Opacity</label>
             <div style="display:flex;gap:8px;align-items:center;">
               <input type="range" class="cc-slider" id="bgOpacitySlider" min="0" max="100" value="0">
@@ -1289,16 +1294,16 @@
           <div class="cc-control-group">
             <label class="cc-control-label">Subtitle Vertical Position (px)</label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input type="number" class="cc-slider" id="positionVertical" min="-100" max="100" value="0">
-              <span class="cc-slider-value">px</span>
+              <input type="range" class="cc-slider" id="positionVertical" min="-100" max="100" value="0">
+              <span class="cc-slider-value" id="positionVerticalValue">0px</span>
             </div>
           </div>
 
           <div class="cc-control-group">
             <label class="cc-control-label">Subtitle Horizontal Position (px)</label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input type="number" class="cc-slider" id="positionHorizontal" min="-100" max="100" value="0">
-              <span class="cc-slider-value">px</span>
+              <input type="range" class="cc-slider" id="positionHorizontal" min="-100" max="100" value="0">
+              <span class="cc-slider-value" id="positionHorizontalValue">0px</span>
             </div>
           </div>
         </div>
@@ -1352,7 +1357,9 @@
     const fontFamilySelect = document.getElementById('fontFamilySelect');
     const shadowSelect = document.getElementById('shadowSelect');
     const positionVertical = document.getElementById('positionVertical');
+    const positionVerticalValue = document.getElementById('positionVerticalValue');
     const positionHorizontal = document.getElementById('positionHorizontal');
+    const positionHorizontalValue = document.getElementById('positionHorizontalValue');
     const ccResetBtn = document.getElementById('ccResetBtn');
     const ccSaveBtn = document.getElementById('ccSaveBtn');
 
@@ -1362,6 +1369,7 @@
       fontColor: '#FFFFFF',
       textOpacity: 100,
       fontFamily: 'Arial',
+      bgColor: '#000000',
       bgOpacity: 0,
       shadow: 'edge-shadow',
       positionVertical: 0,
@@ -1916,7 +1924,8 @@
 
     function createColorPickers() {
       const pickers = [
-        { id: 'fontColorPicker', active: '#FFFFFF' }
+        { id: 'fontColorPicker', active: '#FFFFFF', cssVar: '--cc-text-color', previewProp: 'color' },
+        { id: 'bgColorPicker', active: '#000000', cssVar: '--cc-bg-color', previewProp: 'backgroundColor' }
       ];
       pickers.forEach(picker => {
         const container = document.getElementById(picker.id);
@@ -1929,8 +1938,9 @@
             e.stopPropagation();
             container.querySelectorAll('.cc-color-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            document.documentElement.style.setProperty('--cc-text-color', color);
-            ccPreview.style.color = color;
+            document.documentElement.style.setProperty(picker.cssVar, color);
+            if (picker.previewProp === 'color') ccPreview.style.color = color;
+            else ccPreview.style.backgroundColor = color;
           });
           container.appendChild(btn);
         });
@@ -1982,11 +1992,13 @@
     });
 
     positionVertical.addEventListener('input', () => {
+      positionVerticalValue.textContent = positionVertical.value + 'px';
       document.documentElement.style.setProperty('--cc-position-vertical', positionVertical.value + 'px');
       ccPreview.style.transform = `translate(${positionHorizontal.value}px, ${positionVertical.value}px)`;
     });
 
     positionHorizontal.addEventListener('input', () => {
+      positionHorizontalValue.textContent = positionHorizontal.value + 'px';
       document.documentElement.style.setProperty('--cc-position-horizontal', positionHorizontal.value + 'px');
       ccPreview.style.transform = `translate(${positionHorizontal.value}px, ${positionVertical.value}px)`;
     });
@@ -2017,16 +2029,21 @@
       fontSizeValue.textContent = ccDefaults.fontSize + 'px';
       textOpacityValue.textContent = ccDefaults.textOpacity + '%';
       bgOpacityValue.textContent = ccDefaults.bgOpacity + '%';
+      positionVerticalValue.textContent = ccDefaults.positionVertical + 'px';
+      positionHorizontalValue.textContent = ccDefaults.positionHorizontal + 'px';
       document.documentElement.style.setProperty('--cc-font-size', ccDefaults.fontSize + 'px');
       document.documentElement.style.setProperty('--cc-text-opacity', ccDefaults.textOpacity / 100);
       document.documentElement.style.setProperty('--cc-bg-opacity', ccDefaults.bgOpacity / 100);
       document.documentElement.style.setProperty('--cc-text-color', ccDefaults.fontColor);
+      document.documentElement.style.setProperty('--cc-bg-color', ccDefaults.bgColor);
       document.documentElement.style.setProperty('--cc-font-family', ccDefaults.fontFamily);
       document.documentElement.style.setProperty('--cc-position-vertical', ccDefaults.positionVertical + 'px');
       document.documentElement.style.setProperty('--cc-position-horizontal', ccDefaults.positionHorizontal + 'px');
       applyShadow(ccDefaults.shadow);
       document.querySelectorAll('#fontColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('#fontColorPicker .cc-color-btn')[0].classList.add('active');
+      document.querySelectorAll('#fontColorPicker .cc-color-btn')[1].classList.add('active');
+      document.querySelectorAll('#bgColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#bgColorPicker .cc-color-btn')[0].classList.add('active');
       ccPreview.style.color = ccDefaults.fontColor;
       updateCCPreview();
     });
