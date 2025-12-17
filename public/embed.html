@@ -950,7 +950,6 @@
     }
 
     function populateSubtitles(tracks) {
-      clearSubtitles();
       subtitlesMenu.innerHTML = '<div class="settings-option active" data-value=""><span>Off</span><span class="check">✓</span></div>';
       const captionTracks = tracks.filter(t => t.kind === 'captions');
       captionTracks.forEach(track => {
@@ -1001,6 +1000,7 @@
       }
 
       showLoading(true);
+      clearSubtitles();
       const currentTime = video.currentTime;
 
       if (hls) {
