@@ -441,8 +441,19 @@
             
             try {
                 const videoId = getVideoId();
-                const response = await fetch(`/api/stream?id=${encodeURIComponent(videoId)}&server=hd-2`);
+                console.log('Loading stream for ID:', videoId);
+                const apiUrl = `/api/stream?id=${encodeURIComponent(videoId)}&server=hd-2`;
+                console.log('API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('Stream data received:', data);
 
                 if (!data.success) {
                     showMessage('Stream not available');
@@ -455,7 +466,7 @@
                 playStream(type);
             } catch (error) {
                 console.error('Error loading stream:', error);
-                showMessage('Error loading stream');
+                showMessage('Error: ' + error.message);
                 hideLoader();
             }
         }
@@ -468,6 +479,9 @@
                 hideLoader();
                 return;
             }
+
+            // Proxy the stream URL
+            const proxiedUrl = `/proxy?url=${encodeURIComponent(streamInfo.link)}`;
 
             // Destroy previous HLS instance
             if (hls) {
@@ -495,10 +509,10 @@
                     }
                 });
 
-                hls.loadSource(streamInfo.link);
+                hls.loadSource(proxiedUrl);
                 hls.attachMedia(video);
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = streamInfo.link;
+                video.src = proxiedUrl;
                 hideLoader();
                 hideMessage();
                 populateQualityMenu();
