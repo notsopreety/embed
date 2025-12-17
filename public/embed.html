@@ -163,7 +163,6 @@
     .thumbnail-preview {
       position: absolute;
       bottom: 40px;
-      transform: translateX(-50%);
       background: rgba(20, 20, 20, 0.95);
       border: 2px solid #e50914;
       border-radius: 8px;
@@ -1158,6 +1157,7 @@
         let previewLeft = e.clientX - rect.left - displayWidth / 2;
         previewLeft = Math.max(0, Math.min(previewLeft, rect.width - displayWidth));
         thumbnailPreview.style.left = previewLeft + 'px';
+        thumbnailPreview.style.transform = 'none';
         thumbnailPreview.style.display = 'flex';
       }
     });
