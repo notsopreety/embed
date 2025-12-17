@@ -32,6 +32,7 @@ The server (`server.ts`) handles these responsibilities:
 
 ### Embedded Player Features (`/embed/:id`)
 - **Custom Controls**: Play/pause, seek bar, volume slider, fullscreen, Picture-in-Picture
+- **Auto-Hide Controllers**: Controllers automatically hide after 5 seconds of inactivity (keyboard, mouse, or click events), unless settings menu or subtitle settings modal is open
 - **Quality Selector**: Switch between available resolutions (Auto, 1080p, 720p, 360p)
 - **Subtitle Picker**: Multi-language subtitle support with on/off toggle
 - **SUB/DUB Toggle**: Switch between subbed and dubbed audio tracks

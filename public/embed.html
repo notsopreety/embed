@@ -1728,15 +1728,13 @@
     function showControls() {
       playerWrapper.classList.add('show-controls');
       clearTimeout(controlsTimeout);
-      if (!video.paused) {
-        controlsTimeout = setTimeout(() => {
-          const settingsMenuOpen = document.querySelector('.settings-menu.show');
-          const ccModalOpen = document.querySelector('.cc-modal-overlay.show');
-          if (!settingsMenuOpen && !ccModalOpen) {
-            playerWrapper.classList.remove('show-controls');
-          }
-        }, 5000);
-      }
+      controlsTimeout = setTimeout(() => {
+        const settingsMenuOpen = document.querySelector('.settings-menu.show');
+        const ccModalOpen = document.querySelector('.cc-modal-overlay.show');
+        if (!settingsMenuOpen && !ccModalOpen) {
+          playerWrapper.classList.remove('show-controls');
+        }
+      }, 5000);
     }
 
     function checkSkipButtons() {
@@ -2341,7 +2339,7 @@
           break;
         case 'c':
           e.preventDefault();
-          subtitlesBtn.click();
+          ccBtn.click();
           break;
         case 'p':
           e.preventDefault();
