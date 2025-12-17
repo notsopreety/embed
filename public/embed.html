@@ -841,7 +841,12 @@
       outroStart = source.outro?.start || 0;
       outroEnd = source.outro?.end || 0;
 
-      const hlsUrl = proxyUrl(source.link.file);
+      const streamUrl = typeof source.link === 'string' ? source.link : source.link?.file;
+      if (!streamUrl) {
+        showError('Stream URL not available');
+        return;
+      }
+      const hlsUrl = proxyUrl(streamUrl);
 
       if (Hls.isSupported()) {
         hls = new Hls({
@@ -1093,26 +1098,42 @@
     playerWrapper.addEventListener('mousemove', showControls);
     playerWrapper.addEventListener('click', showControls);
 
-    let lastTap = 0;
-    document.getElementById('doubleTapLeft').addEventListener('click', (e) => {
+    let lastTapLeft = 0;
+    let lastTapRight = 0;
+
+    function handleDoubleTapLeft(e) {
+      e.preventDefault();
       const now = Date.now();
-      if (now - lastTap < 300) {
+      if (now - lastTapLeft < 300) {
         video.currentTime = Math.max(0, video.currentTime - 10);
         seekLeft.style.display = 'block';
         setTimeout(() => seekLeft.style.display = 'none', 500);
+        lastTapLeft = 0;
+      } else {
+        lastTapLeft = now;
       }
-      lastTap = now;
-    });
+    }
 
-    document.getElementById('doubleTapRight').addEventListener('click', (e) => {
+    function handleDoubleTapRight(e) {
+      e.preventDefault();
       const now = Date.now();
-      if (now - lastTap < 300) {
+      if (now - lastTapRight < 300) {
         video.currentTime = Math.min(video.duration, video.currentTime + 10);
         seekRight.style.display = 'block';
         setTimeout(() => seekRight.style.display = 'none', 500);
+        lastTapRight = 0;
+      } else {
+        lastTapRight = now;
       }
-      lastTap = now;
-    });
+    }
+
+    const doubleTapLeftEl = document.getElementById('doubleTapLeft');
+    const doubleTapRightEl = document.getElementById('doubleTapRight');
+
+    doubleTapLeftEl.addEventListener('click', handleDoubleTapLeft);
+    doubleTapLeftEl.addEventListener('touchend', handleDoubleTapLeft);
+    doubleTapRightEl.addEventListener('click', handleDoubleTapRight);
+    doubleTapRightEl.addEventListener('touchend', handleDoubleTapRight);
 
     document.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT') return;
