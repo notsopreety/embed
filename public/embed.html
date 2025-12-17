@@ -788,6 +788,76 @@
     let outroStart = 0;
     let outroEnd = 0;
     let thumbnailData = null;
+    let thumbnailImg = new Image();
+
+    async function loadThumbnails(tracks) {
+      const thumbnailTrack = tracks.find(t => t.kind === 'thumbnails');
+      if (!thumbnailTrack) return;
+
+      try {
+        const vttUrl = thumbnailTrack.file;
+        const response = await fetch(proxyUrl(vttUrl));
+        const vttText = await response.text();
+        const lines = vttText.split('\n');
+        
+        const vttBaseUrl = vttUrl.substring(0, vttUrl.lastIndexOf('/') + 1);
+        
+        thumbnailData = [];
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (line.includes('-->')) {
+            const timeParts = line.split('-->');
+            const startTime = timeToSeconds(timeParts[0].trim());
+            const endTime = timeToSeconds(timeParts[1].trim());
+            
+            if (i + 1 < lines.length) {
+              const nextLine = lines[i + 1].trim();
+              if (nextLine.includes('#xywh=')) {
+                const match = nextLine.match(/#xywh=(\d+),(\d+),(\d+),(\d+)/);
+                if (match) {
+                  let spriteUrl = nextLine.split('#')[0];
+                  if (!spriteUrl.startsWith('http')) {
+                    spriteUrl = vttBaseUrl + spriteUrl;
+                  }
+                  thumbnailData.push({
+                    start: startTime,
+                    end: endTime,
+                    url: spriteUrl,
+                    x: parseInt(match[1]),
+                    y: parseInt(match[2]),
+                    width: parseInt(match[3]),
+                    height: parseInt(match[4])
+                  });
+                }
+              }
+            }
+          }
+        }
+        
+        console.log('Loaded', thumbnailData.length, 'thumbnail frames');
+      } catch (error) {
+        console.error('Failed to load thumbnails:', error);
+      }
+    }
+
+    function timeToSeconds(timeStr) {
+      const parts = timeStr.split(':');
+      let seconds = 0;
+      if (parts.length === 3) {
+        seconds += parseInt(parts[0]) * 3600;
+        seconds += parseInt(parts[1]) * 60;
+        seconds += parseFloat(parts[2]);
+      } else if (parts.length === 2) {
+        seconds += parseInt(parts[0]) * 60;
+        seconds += parseFloat(parts[1]);
+      }
+      return seconds;
+    }
+
+    function getThumbnailAtTime(time) {
+      if (!thumbnailData || thumbnailData.length === 0) return null;
+      return thumbnailData.find(t => time >= t.start && time < t.end);
+    }
 
     function proxyUrl(url) {
       if (!url || url.startsWith('/proxy?url=')) return url;
@@ -974,6 +1044,7 @@
           showLoading(false);
           populateQualityLevels();
           populateSubtitles(source.tracks || []);
+          loadThumbnails(source.tracks || []);
           if (currentTime > 0) {
             video.currentTime = currentTime;
           }
@@ -1006,6 +1077,7 @@
         video.addEventListener('loadedmetadata', () => {
           showLoading(false);
           populateSubtitles(source.tracks || []);
+          loadThumbnails(source.tracks || []);
           if (currentTime > 0) {
             video.currentTime = currentTime;
           }
@@ -1105,8 +1177,39 @@
       const percent = (e.clientX - rect.left) / rect.width;
       const time = percent * video.duration;
       
-      const thumbnailPreview = document.getElementById('thumbnailPreview');
-      thumbnailPreview.style.display = 'none';
+      const thumbnail = getThumbnailAtTime(time);
+      if (thumbnail) {
+        const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const thumbnailTimeEl = document.getElementById('thumbnailTime');
+        const thumbnailImgEl = document.getElementById('thumbnailImg');
+        
+        thumbnailImgEl.style.backgroundImage = `url('${proxyUrl(thumbnail.url)}')`;
+        thumbnailImgEl.style.backgroundPosition = `-${thumbnail.x}px -${thumbnail.y}px`;
+        thumbnailImgEl.style.backgroundRepeat = 'no-repeat';
+        thumbnailImgEl.style.backgroundSize = 'auto';
+        
+        let displayWidth = thumbnail.width;
+        let displayHeight = thumbnail.height;
+        
+        if (window.innerWidth <= 600) {
+          displayWidth = Math.min(thumbnail.width, 120);
+          displayHeight = Math.min(thumbnail.height, 68);
+        } else if (window.innerWidth <= 768) {
+          displayWidth = Math.min(thumbnail.width, 140);
+          displayHeight = Math.min(thumbnail.height, 79);
+        }
+        
+        thumbnailImgEl.style.width = displayWidth + 'px';
+        thumbnailImgEl.style.height = displayHeight + 'px';
+        
+        thumbnailTimeEl.textContent = formatTime(time);
+        
+        let previewLeft = e.clientX - rect.left - displayWidth / 2;
+        previewLeft = Math.max(0, Math.min(previewLeft, rect.width - displayWidth));
+        thumbnailPreview.style.left = previewLeft + 'px';
+        thumbnailPreview.style.transform = 'none';
+        thumbnailPreview.style.display = 'flex';
+      }
     });
 
     progressContainer.addEventListener('mouseleave', () => {
