@@ -41,6 +41,8 @@
       font-size: var(--cc-font-size, 1.2em);
       font-weight: 600;
       opacity: var(--cc-text-opacity, 1);
+      -webkit-text-stroke: var(--cc-text-stroke, 1px rgba(0, 0, 0, 0.9));
+      text-stroke: var(--cc-text-stroke, 1px rgba(0, 0, 0, 0.9));
       text-shadow: 
         -2px -2px 0 rgba(0, 0, 0, 0.9),
         2px -2px 0 rgba(0, 0, 0, 0.9),
@@ -1292,6 +1294,23 @@
           </div>
 
           <div class="cc-control-group">
+            <label class="cc-control-label">Text Stroke</label>
+            <select class="cc-dropdown" id="strokeToggle">
+              <option value="enabled">Enabled</option>
+              <option value="disabled">Disabled</option>
+            </select>
+          </div>
+
+          <div class="cc-control-group">
+            <label class="cc-control-label">Subtitle Position</label>
+            <select class="cc-dropdown" id="positionSelect">
+              <option value="bottom">Bottom</option>
+              <option value="top">Top</option>
+              <option value="center">Center</option>
+            </select>
+          </div>
+
+          <div class="cc-control-group">
             <label class="cc-control-label">Subtitle Shadow</label>
             <select class="cc-dropdown" id="shadowSelect">
               <option value="none">None</option>
@@ -1366,6 +1385,8 @@
     const windowOpacityValue = document.getElementById('windowOpacityValue');
     const fontFamilySelect = document.getElementById('fontFamilySelect');
     const shadowSelect = document.getElementById('shadowSelect');
+    const strokeToggle = document.getElementById('strokeToggle');
+    const positionSelect = document.getElementById('positionSelect');
     const ccResetBtn = document.getElementById('ccResetBtn');
     const ccSaveBtn = document.getElementById('ccSaveBtn');
 
@@ -1379,7 +1400,9 @@
       bgOpacity: 0,
       shadow: 'edge-shadow',
       windowColor: '#000000',
-      windowOpacity: 0
+      windowOpacity: 0,
+      strokeEnabled: 'enabled',
+      subtitlePosition: 'bottom'
     };
 
     const subBtn = document.getElementById('subBtn');
@@ -1992,6 +2015,25 @@
       updateCCPreview();
     });
 
+    strokeToggle.addEventListener('change', () => {
+      const strokeValue = strokeToggle.value === 'enabled' ? '1px' : 'none';
+      document.documentElement.style.setProperty('--cc-text-stroke', strokeValue);
+    });
+
+    positionSelect.addEventListener('change', () => {
+      document.documentElement.style.setProperty('--cc-position', positionSelect.value);
+      const videoElement = document.querySelector('video');
+      if (videoElement) {
+        if (positionSelect.value === 'top') {
+          videoElement.style.justifyContent = 'flex-start';
+        } else if (positionSelect.value === 'center') {
+          videoElement.style.justifyContent = 'center';
+        } else {
+          videoElement.style.justifyContent = 'flex-end';
+        }
+      }
+    });
+
     ccBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       ccModal.classList.add('show');
@@ -2009,6 +2051,8 @@
       windowOpacitySlider.value = ccDefaults.windowOpacity;
       fontFamilySelect.value = ccDefaults.fontFamily;
       shadowSelect.value = ccDefaults.shadow;
+      strokeToggle.value = ccDefaults.strokeEnabled;
+      positionSelect.value = ccDefaults.subtitlePosition;
       fontSizeValue.textContent = ccDefaults.fontSize + 'px';
       textOpacityValue.textContent = ccDefaults.textOpacity + '%';
       bgOpacityValue.textContent = ccDefaults.bgOpacity + '%';
@@ -2017,6 +2061,19 @@
       document.documentElement.style.setProperty('--cc-text-opacity', ccDefaults.textOpacity / 100);
       document.documentElement.style.setProperty('--cc-bg-opacity', ccDefaults.bgOpacity / 100);
       document.documentElement.style.setProperty('--cc-window-opacity', ccDefaults.windowOpacity / 100);
+      document.documentElement.style.setProperty('--cc-text-color', ccDefaults.fontColor);
+      document.documentElement.style.setProperty('--cc-bg-color', ccDefaults.bgColor);
+      document.documentElement.style.setProperty('--cc-window-color', ccDefaults.windowColor);
+      document.documentElement.style.setProperty('--cc-font-family', ccDefaults.fontFamily);
+      document.documentElement.style.setProperty('--cc-text-stroke', ccDefaults.strokeEnabled === 'enabled' ? '1px' : 'none');
+      document.documentElement.style.setProperty('--cc-position', ccDefaults.subtitlePosition);
+      document.querySelectorAll('#fontColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#fontColorPicker .cc-color-btn')[1].classList.add('active');
+      document.querySelectorAll('#bgColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#bgColorPicker .cc-color-btn')[0].classList.add('active');
+      document.querySelectorAll('#windowColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#windowColorPicker .cc-color-btn')[0].classList.add('active');
+      ccPreview.style.color = ccDefaults.fontColor;
       updateCCPreview();
     });
 
@@ -2032,6 +2089,13 @@
 
     document.addEventListener('click', () => {
       settingsMenu.classList.remove('show');
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        ccModal.classList.remove('show');
+        settingsMenu.classList.remove('show');
+      }
     });
 
     createColorPickers();
