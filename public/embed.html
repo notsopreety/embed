@@ -176,6 +176,8 @@
     .thumbnail-preview img {
       max-width: 160px;
       max-height: 90px;
+      background-size: auto;
+      background-repeat: no-repeat;
     }
 
     .thumbnail-time {
@@ -692,6 +694,8 @@
     let introEnd = 0;
     let outroStart = 0;
     let outroEnd = 0;
+    let thumbnailData = null;
+    let thumbnailImg = new Image();
 
     function proxyUrl(url) {
       if (!url || url.startsWith('/proxy?url=')) return url;
@@ -707,6 +711,71 @@
         return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
       }
       return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    async function loadThumbnails(tracks) {
+      const thumbnailTrack = tracks.find(t => t.kind === 'thumbnails');
+      if (!thumbnailTrack) return;
+
+      try {
+        const response = await fetch(proxyUrl(thumbnailTrack.file));
+        const vttText = await response.text();
+        const lines = vttText.split('\n');
+        
+        thumbnailData = [];
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (line.includes('-->')) {
+            const timeParts = line.split('-->');
+            const startTime = timeToSeconds(timeParts[0].trim());
+            const endTime = timeToSeconds(timeParts[1].trim());
+            
+            if (i + 1 < lines.length) {
+              const nextLine = lines[i + 1].trim();
+              if (nextLine.includes('#xywh=')) {
+                const match = nextLine.match(/#xywh=(\d+),(\d+),(\d+),(\d+)/);
+                if (match) {
+                  const url = nextLine.split('#')[0];
+                  thumbnailData.push({
+                    start: startTime,
+                    end: endTime,
+                    url: url,
+                    x: parseInt(match[1]),
+                    y: parseInt(match[2]),
+                    width: parseInt(match[3]),
+                    height: parseInt(match[4])
+                  });
+                }
+              }
+            }
+          }
+        }
+        
+        if (thumbnailData.length > 0) {
+          thumbnailImg.src = proxyUrl(thumbnailData[0].url);
+        }
+      } catch (error) {
+        console.error('Failed to load thumbnails:', error);
+      }
+    }
+
+    function timeToSeconds(timeStr) {
+      const parts = timeStr.split(':');
+      let seconds = 0;
+      if (parts.length === 3) {
+        seconds += parseInt(parts[0]) * 3600;
+        seconds += parseInt(parts[1]) * 60;
+        seconds += parseFloat(parts[2]);
+      } else if (parts.length === 2) {
+        seconds += parseInt(parts[0]) * 60;
+        seconds += parseFloat(parts[1]);
+      }
+      return seconds;
+    }
+
+    function getThumbnailAtTime(time) {
+      if (!thumbnailData || thumbnailData.length === 0) return null;
+      return thumbnailData.find(t => time >= t.start && time < t.end);
     }
 
     function getIdFromUrl() {
@@ -878,6 +947,7 @@
           showLoading(false);
           populateQualityLevels();
           populateSubtitles(source.tracks || []);
+          loadThumbnails(source.tracks || []);
           if (currentTime > 0) {
             video.currentTime = currentTime;
           }
@@ -910,6 +980,7 @@
         video.addEventListener('loadedmetadata', () => {
           showLoading(false);
           populateSubtitles(source.tracks || []);
+          loadThumbnails(source.tracks || []);
           if (currentTime > 0) {
             video.currentTime = currentTime;
           }
@@ -1002,6 +1073,36 @@
       const rect = progressContainer.getBoundingClientRect();
       const percent = (e.clientX - rect.left) / rect.width;
       video.currentTime = percent * video.duration;
+    });
+
+    progressContainer.addEventListener('mousemove', (e) => {
+      const rect = progressContainer.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      const time = percent * video.duration;
+      
+      const thumbnail = getThumbnailAtTime(time);
+      if (thumbnail) {
+        const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const thumbnailTimeEl = document.getElementById('thumbnailTime');
+        const thumbnailImgEl = document.getElementById('thumbnailImg');
+        
+        thumbnailImgEl.src = proxyUrl(thumbnail.url);
+        thumbnailImgEl.style.backgroundImage = `url(${proxyUrl(thumbnail.url)})`;
+        thumbnailImgEl.style.backgroundPosition = `-${thumbnail.x}px -${thumbnail.y}px`;
+        thumbnailImgEl.style.width = thumbnail.width + 'px';
+        thumbnailImgEl.style.height = thumbnail.height + 'px';
+        thumbnailImgEl.style.display = 'block';
+        
+        thumbnailTimeEl.textContent = formatTime(time);
+        
+        thumbnailPreview.style.left = e.clientX - rect.left + 'px';
+        thumbnailPreview.style.display = 'flex';
+      }
+    });
+
+    progressContainer.addEventListener('mouseleave', () => {
+      const thumbnailPreview = document.getElementById('thumbnailPreview');
+      thumbnailPreview.style.display = 'none';
     });
 
     let isDragging = false;
