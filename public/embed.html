@@ -47,8 +47,6 @@
       text-align: center;
       white-space: pre-wrap;
       word-wrap: break-word;
-      margin-top: var(--cc-position-vertical, 0px);
-      margin-left: var(--cc-position-horizontal, 0px);
     }
 
     ::cue-background {
@@ -1291,22 +1289,6 @@
               <option value="edge-shadow" selected>Edge Shadow</option>
             </select>
           </div>
-
-          <div class="cc-control-group">
-            <label class="cc-control-label">Subtitle Vertical Position (px)</label>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input type="range" class="cc-slider" id="positionVertical" min="-100" max="100" value="0">
-              <span class="cc-slider-value" id="positionVerticalValue">0px</span>
-            </div>
-          </div>
-
-          <div class="cc-control-group">
-            <label class="cc-control-label">Subtitle Horizontal Position (px)</label>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input type="range" class="cc-slider" id="positionHorizontal" min="-100" max="100" value="0">
-              <span class="cc-slider-value" id="positionHorizontalValue">0px</span>
-            </div>
-          </div>
         </div>
 
         <div class="cc-buttons">
@@ -1357,10 +1339,6 @@
     const bgOpacityValue = document.getElementById('bgOpacityValue');
     const fontFamilySelect = document.getElementById('fontFamilySelect');
     const shadowSelect = document.getElementById('shadowSelect');
-    const positionVertical = document.getElementById('positionVertical');
-    const positionVerticalValue = document.getElementById('positionVerticalValue');
-    const positionHorizontal = document.getElementById('positionHorizontal');
-    const positionHorizontalValue = document.getElementById('positionHorizontalValue');
     const ccResetBtn = document.getElementById('ccResetBtn');
     const ccSaveBtn = document.getElementById('ccSaveBtn');
 
@@ -1372,9 +1350,7 @@
       fontFamily: 'Arial',
       bgColor: '#000000',
       bgOpacity: 0,
-      shadow: 'edge-shadow',
-      positionVertical: 0,
-      positionHorizontal: 0
+      shadow: 'edge-shadow'
     };
 
     const subBtn = document.getElementById('subBtn');
@@ -1991,16 +1967,6 @@
       updateCCPreview();
     });
 
-    positionVertical.addEventListener('input', () => {
-      positionVerticalValue.textContent = positionVertical.value + 'px';
-      document.documentElement.style.setProperty('--cc-position-vertical', positionVertical.value + 'px');
-    });
-
-    positionHorizontal.addEventListener('input', () => {
-      positionHorizontalValue.textContent = positionHorizontal.value + 'px';
-      document.documentElement.style.setProperty('--cc-position-horizontal', positionHorizontal.value + 'px');
-    });
-
     shadowSelect.addEventListener('change', () => {
       applyShadow(shadowSelect.value);
       document.documentElement.style.setProperty('--cc-text-shadow', shadowStyles[shadowSelect.value]);
@@ -2022,21 +1988,15 @@
       bgOpacitySlider.value = ccDefaults.bgOpacity;
       fontFamilySelect.value = ccDefaults.fontFamily;
       shadowSelect.value = ccDefaults.shadow;
-      positionVertical.value = ccDefaults.positionVertical;
-      positionHorizontal.value = ccDefaults.positionHorizontal;
       fontSizeValue.textContent = ccDefaults.fontSize + 'px';
       textOpacityValue.textContent = ccDefaults.textOpacity + '%';
       bgOpacityValue.textContent = ccDefaults.bgOpacity + '%';
-      positionVerticalValue.textContent = ccDefaults.positionVertical + 'px';
-      positionHorizontalValue.textContent = ccDefaults.positionHorizontal + 'px';
       document.documentElement.style.setProperty('--cc-font-size', ccDefaults.fontSize + 'px');
       document.documentElement.style.setProperty('--cc-text-opacity', ccDefaults.textOpacity / 100);
       document.documentElement.style.setProperty('--cc-bg-opacity', ccDefaults.bgOpacity / 100);
       document.documentElement.style.setProperty('--cc-text-color', ccDefaults.fontColor);
       document.documentElement.style.setProperty('--cc-bg-color', ccDefaults.bgColor);
       document.documentElement.style.setProperty('--cc-font-family', ccDefaults.fontFamily);
-      document.documentElement.style.setProperty('--cc-position-vertical', ccDefaults.positionVertical + 'px');
-      document.documentElement.style.setProperty('--cc-position-horizontal', ccDefaults.positionHorizontal + 'px');
       applyShadow(ccDefaults.shadow);
       document.querySelectorAll('#fontColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('#fontColorPicker .cc-color-btn')[1].classList.add('active');
