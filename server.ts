@@ -2,7 +2,6 @@ import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 
 const app = express();
-const HIANIME_API = 'https://hianime-api-yugantxettri.vercel.app';
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -79,8 +78,8 @@ app.get('/api/stream', async (req: Request, res: Response) => {
     const id = req.query.id as string || 'solo-leveling-18718::ep=114721';
     const server = (req.query.server as string || 'hd-2').toLowerCase();
     const [subResponse, dubResponse] = await Promise.all([
-      fetch(`${HIANIME_API}/api/v1/stream?id=${encodeURIComponent(id)}&type=sub&server=${server}`),
-      fetch(`${HIANIME_API}/api/v1/stream?id=${encodeURIComponent(id)}&type=dub&server=${server}`)
+      fetch(`https://hianime-api-bzut.onrender.com/api/v1/stream?id=${encodeURIComponent(id)}&type=sub&server=${server}`),
+      fetch(`https://hianime-api-bzut.onrender.com/api/v1/stream?id=${encodeURIComponent(id)}&type=dub&server=${server}`)
     ]);
     const subData = await subResponse.json();
     const dubData = await dubResponse.json();
