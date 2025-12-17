@@ -41,26 +41,13 @@
       font-size: var(--cc-font-size, 1.2em);
       font-weight: 600;
       opacity: var(--cc-text-opacity, 1);
-      -webkit-text-stroke: var(--cc-text-stroke, 1px rgba(0, 0, 0, 0.9));
-      text-stroke: var(--cc-text-stroke, 1px rgba(0, 0, 0, 0.9));
-      text-shadow: 
-        -2px -2px 0 rgba(0, 0, 0, 0.9),
-        2px -2px 0 rgba(0, 0, 0, 0.9),
-        -2px 2px 0 rgba(0, 0, 0, 0.9),
-        2px 2px 0 rgba(0, 0, 0, 0.9),
-        0 -2px 0 rgba(0, 0, 0, 0.9),
-        0 2px 0 rgba(0, 0, 0, 0.9),
-        -2px 0 0 rgba(0, 0, 0, 0.9),
-        2px 0 0 rgba(0, 0, 0, 0.9),
-        -3px 0 5px rgba(0, 0, 0, 0.85),
-        3px 0 5px rgba(0, 0, 0, 0.85),
-        0 -3px 5px rgba(0, 0, 0, 0.85),
-        0 3px 5px rgba(0, 0, 0, 0.85);
+      text-shadow: var(--cc-text-shadow, -2px -2px 0 rgba(0, 0, 0, 0.9), 2px -2px 0 rgba(0, 0, 0, 0.9), -2px 2px 0 rgba(0, 0, 0, 0.9), 2px 2px 0 rgba(0, 0, 0, 0.9), 0 -2px 0 rgba(0, 0, 0, 0.9), 0 2px 0 rgba(0, 0, 0, 0.9), -2px 0 0 rgba(0, 0, 0, 0.9), 2px 0 0 rgba(0, 0, 0, 0.9));
       line-height: 1.4;
       letter-spacing: 0.5px;
       text-align: center;
       white-space: pre-wrap;
       word-wrap: break-word;
+      transform: translate(var(--cc-position-horizontal, 0px), var(--cc-position-vertical, 0px));
     }
 
     ::cue-background {
@@ -1950,10 +1937,26 @@
       });
     }
 
+    const shadowStyles = {
+      'none': 'none',
+      'drop-shadow': '-2px -2px 0 rgba(0, 0, 0, 0.9), 2px -2px 0 rgba(0, 0, 0, 0.9), -2px 2px 0 rgba(0, 0, 0, 0.9), 2px 2px 0 rgba(0, 0, 0, 0.9), 0 -2px 0 rgba(0, 0, 0, 0.9), 0 2px 0 rgba(0, 0, 0, 0.9), -2px 0 0 rgba(0, 0, 0, 0.9), 2px 0 0 rgba(0, 0, 0, 0.9)',
+      'outer-shade': '-3px 0 5px rgba(0, 0, 0, 0.85), 3px 0 5px rgba(0, 0, 0, 0.85), 0 -3px 5px rgba(0, 0, 0, 0.85), 0 3px 5px rgba(0, 0, 0, 0.85)',
+      'top-shadow': '0 -3px 0 rgba(0, 0, 0, 0.9), 0 -4px 5px rgba(0, 0, 0, 0.85)',
+      'edge-shadow': '-2px -2px 0 rgba(0, 0, 0, 0.9), 2px -2px 0 rgba(0, 0, 0, 0.9), -2px 2px 0 rgba(0, 0, 0, 0.9), 2px 2px 0 rgba(0, 0, 0, 0.9), 0 -2px 0 rgba(0, 0, 0, 0.9), 0 2px 0 rgba(0, 0, 0, 0.9), -2px 0 0 rgba(0, 0, 0, 0.9), 2px 0 0 rgba(0, 0, 0, 0.9), -3px 0 5px rgba(0, 0, 0, 0.85), 3px 0 5px rgba(0, 0, 0, 0.85), 0 -3px 5px rgba(0, 0, 0, 0.85), 0 3px 5px rgba(0, 0, 0, 0.85)'
+    };
+
+    function applyShadow(shadowType) {
+      const shadowStyle = shadowStyles[shadowType] || shadowStyles['edge-shadow'];
+      document.documentElement.style.setProperty('--cc-text-shadow', shadowStyle);
+      ccPreview.style.textShadow = shadowStyle;
+    }
+
     function updateCCPreview() {
       ccPreview.style.fontSize = fontSizeSlider.value + 'px';
       ccPreview.style.opacity = textOpacitySlider.value / 100;
       ccPreview.style.fontFamily = fontFamilySelect.value;
+      ccPreview.style.transform = `translate(${positionHorizontal.value}px, ${positionVertical.value}px)`;
+      applyShadow(shadowSelect.value);
     }
 
     fontSizeSlider.addEventListener('input', () => {
@@ -1980,10 +1983,17 @@
 
     positionVertical.addEventListener('input', () => {
       document.documentElement.style.setProperty('--cc-position-vertical', positionVertical.value + 'px');
+      ccPreview.style.transform = `translate(${positionHorizontal.value}px, ${positionVertical.value}px)`;
     });
 
     positionHorizontal.addEventListener('input', () => {
       document.documentElement.style.setProperty('--cc-position-horizontal', positionHorizontal.value + 'px');
+      ccPreview.style.transform = `translate(${positionHorizontal.value}px, ${positionVertical.value}px)`;
+    });
+
+    shadowSelect.addEventListener('change', () => {
+      applyShadow(shadowSelect.value);
+      document.documentElement.style.setProperty('--cc-text-shadow', shadowStyles[shadowSelect.value]);
     });
 
     ccBtn.addEventListener('click', (e) => {
@@ -2014,6 +2024,7 @@
       document.documentElement.style.setProperty('--cc-font-family', ccDefaults.fontFamily);
       document.documentElement.style.setProperty('--cc-position-vertical', ccDefaults.positionVertical + 'px');
       document.documentElement.style.setProperty('--cc-position-horizontal', ccDefaults.positionHorizontal + 'px');
+      applyShadow(ccDefaults.shadow);
       document.querySelectorAll('#fontColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('#fontColorPicker .cc-color-btn')[0].classList.add('active');
       ccPreview.style.color = ccDefaults.fontColor;
