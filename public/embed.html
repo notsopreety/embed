@@ -69,12 +69,36 @@
     }
 
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 3px solid rgba(255, 255, 255, 0.1);
-      border-top-color: #e50914;
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .spinner::before,
+    .spinner::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 3px solid transparent;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 1.5s linear infinite;
+    }
+
+    .spinner::before {
+      border-top-color: #e50914;
+      border-right-color: #e50914;
+      animation-delay: 0s;
+    }
+
+    .spinner::after {
+      border-bottom-color: #e50914;
+      border-left-color: #e50914;
+      animation-delay: 0.75s;
+      top: 6px;
+      left: 6px;
+      width: calc(100% - 12px);
+      height: calc(100% - 12px);
     }
 
     @keyframes spin {
@@ -83,8 +107,16 @@
 
     .loading-text {
       color: #fff;
-      margin-top: 15px;
+      margin-top: 20px;
       font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
     }
 
     .error-overlay {
@@ -1599,8 +1631,9 @@
     const playbackSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
 
     async function loadThumbnails(tracks) {
-      const thumbnailTrack = tracks.find(t => t.kind === 'thumbnails');
-      if (!thumbnailTrack) return;
+      if (!tracks || !Array.isArray(tracks) || tracks.length === 0) return;
+      const thumbnailTrack = tracks.find(t => t && t.kind === 'thumbnails');
+      if (!thumbnailTrack || !thumbnailTrack.file) return;
 
       try {
         const vttUrl = thumbnailTrack.file;
@@ -1758,12 +1791,14 @@
 
     function populateSubtitles(tracks) {
       captionsSection.innerHTML = '<div class="settings-option active" data-value=""><span>Off</span><span class="check">✓</span></div>';
-      const captionTracks = tracks.filter(t => t.kind === 'captions');
+      if (!tracks || !Array.isArray(tracks)) return;
+      const captionTracks = tracks.filter(t => t && t.kind === 'captions');
       captionTracks.forEach(track => {
+        if (!track || !track.file) return;
         const option = document.createElement('div');
         option.className = 'settings-option';
         option.dataset.value = track.file;
-        option.innerHTML = `<span>${track.label}</span><span class="check">✓</span>`;
+        option.innerHTML = `<span>${track.label || 'Subtitle'}</span><span class="check">✓</span>`;
         if (track.default) {
           option.classList.add('active');
           captionsSection.querySelector('[data-value=""]').classList.remove('active');
@@ -1812,7 +1847,26 @@
 
     async function loadStream(audioType) {
       if (!streamData) return;
-      const source = audioType === 'dub' ? streamData.dub : streamData.sub;
+      let source = audioType === 'dub' ? streamData.dub : streamData.sub;
+      
+      // If selected type is empty, try the other one
+      if (!source || Object.keys(source).length === 0) {
+        if (audioType === 'dub' && streamData.sub && Object.keys(streamData.sub).length > 0) {
+          source = streamData.sub;
+          currentAudioType = 'sub';
+          subBtn.classList.add('active');
+          dubBtn.classList.remove('active');
+        } else if (audioType === 'sub' && streamData.dub && Object.keys(streamData.dub).length > 0) {
+          source = streamData.dub;
+          currentAudioType = 'dub';
+          dubBtn.classList.add('active');
+          subBtn.classList.remove('active');
+        } else {
+          showError('Stream not available');
+          return;
+        }
+      }
+      
       if (!source || !source.link) {
         showError('Stream not available');
         return;
@@ -1913,6 +1967,27 @@
       }
     }
 
+    function updateAudioToggleVisibility() {
+      const hasSub = streamData?.sub && Object.keys(streamData.sub).length > 0;
+      const hasDub = streamData?.dub && Object.keys(streamData.dub).length > 0;
+      const audioToggle = document.getElementById('audioToggle');
+      
+      if (hasSub && hasDub) {
+        audioToggle.style.display = 'flex';
+      } else {
+        audioToggle.style.display = 'none';
+        if (hasSub) {
+          currentAudioType = 'sub';
+          subBtn.classList.add('active');
+          dubBtn.classList.remove('active');
+        } else if (hasDub) {
+          currentAudioType = 'dub';
+          dubBtn.classList.add('active');
+          subBtn.classList.remove('active');
+        }
+      }
+    }
+
     async function init() {
       const id = getIdFromUrl();
       if (!id) {
@@ -1924,15 +1999,20 @@
         const response = await fetch('/api/stream?id=' + encodeURIComponent(id));
         const result = await response.json();
 
-        if (!result.success) {
+        if (!result.success || !result.data) {
           showError('Failed to load stream data');
           return;
         }
 
         streamData = result.data;
+        streamData.sub = streamData.sub || {};
+        streamData.dub = streamData.dub || {};
+        
+        updateAudioToggleVisibility();
         loadStream(currentAudioType);
 
       } catch (error) {
+        console.error('Init error:', error);
         showError('Error: ' + error.message);
       }
     }
