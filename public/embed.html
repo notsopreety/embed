@@ -486,12 +486,12 @@
     }
 
     .cc-preview {
-      background: rgba(0, 0, 0, 0.5);
+      background: url('/bg-preview.png') center/cover no-repeat, rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(229, 9, 20, 0.3);
       border-radius: 8px;
       padding: 30px;
       margin-bottom: 25px;
-      min-height: 100px;
+      min-height: 120px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -499,6 +499,26 @@
       color: var(--cc-text-color, white);
       font-family: var(--cc-font-family, Arial);
       opacity: var(--cc-text-opacity, 1);
+      position: relative;
+    }
+
+    .cc-preview::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .cc-preview::after {
+      content: 'The subtitle will look like this';
+      position: absolute;
+      z-index: 1;
     }
 
     .cc-controls {
@@ -640,6 +660,186 @@
     .cc-btn-save:hover {
       background: #cc070b;
       box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+    }
+
+    @media (max-width: 1024px) {
+      .cc-modal {
+        max-width: 90%;
+        padding: 16px;
+      }
+
+      .cc-controls {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .cc-modal-title {
+        font-size: 16px;
+      }
+
+      .cc-control-label {
+        font-size: 12px;
+      }
+
+      .cc-preview {
+        min-height: 100px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .cc-modal {
+        max-width: 95%;
+        width: 95%;
+        max-height: 85vh;
+        padding: 14px;
+        border-radius: 8px;
+      }
+
+      .cc-controls {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .cc-modal-header {
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+      }
+
+      .cc-modal-title {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+      }
+
+      .cc-modal-close {
+        width: 28px;
+        height: 28px;
+      }
+
+      .cc-preview {
+        min-height: 90px;
+        padding: 16px;
+        margin-bottom: 16px;
+        font-size: var(--cc-font-size, 14px);
+      }
+
+      .cc-control-group {
+        gap: 8px;
+      }
+
+      .cc-control-label {
+        font-size: 11px;
+        opacity: 0.85;
+      }
+
+      .cc-slider-value {
+        font-size: 11px;
+      }
+
+      .cc-dropdown {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      .cc-color-btn {
+        width: 28px;
+        height: 28px;
+      }
+
+      .cc-buttons {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .cc-btn {
+        width: 100%;
+        padding: 9px 16px;
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .cc-modal {
+        max-width: 98%;
+        width: 98%;
+        max-height: 90vh;
+        padding: 12px;
+        border-radius: 6px;
+      }
+
+      .cc-modal-header {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+      }
+
+      .cc-modal-title {
+        font-size: 12px;
+        letter-spacing: 0.3px;
+      }
+
+      .cc-modal-close {
+        width: 24px;
+        height: 24px;
+      }
+
+      .cc-preview {
+        min-height: 80px;
+        padding: 12px;
+        margin-bottom: 12px;
+        font-size: var(--cc-font-size, 12px);
+      }
+
+      .cc-controls {
+        gap: 12px;
+      }
+
+      .cc-control-group {
+        gap: 6px;
+      }
+
+      .cc-control-label {
+        font-size: 10px;
+        opacity: 0.8;
+      }
+
+      .cc-slider {
+        height: 5px;
+      }
+
+      .cc-slider::-webkit-slider-thumb {
+        width: 14px;
+        height: 14px;
+      }
+
+      .cc-slider::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+      }
+
+      .cc-slider-value {
+        font-size: 10px;
+      }
+
+      .cc-dropdown {
+        padding: 5px 8px;
+        font-size: 11px;
+      }
+
+      .cc-color-btn {
+        width: 26px;
+        height: 26px;
+      }
+
+      .cc-buttons {
+        gap: 8px;
+      }
+
+      .cc-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
     }
 
     .audio-toggle {
@@ -1031,7 +1231,7 @@
           <button class="cc-modal-close" id="ccModalClose"></button>
         </div>
 
-        <div class="cc-preview" id="ccPreview">The subtitle will look like this</div>
+        <div class="cc-preview" id="ccPreview"></div>
 
         <div class="cc-controls">
           <div class="cc-control-group">
