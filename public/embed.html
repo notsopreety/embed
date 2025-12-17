@@ -173,7 +173,7 @@
       pointer-events: none;
     }
 
-    .thumbnail-preview img {
+    .thumbnail-preview > div:first-child {
       max-width: 160px;
       max-height: 90px;
       background-size: auto;
@@ -583,7 +583,7 @@
         <div class="progress-bar" id="progressBar"></div>
         <div class="progress-handle" id="progressHandle"></div>
         <div class="thumbnail-preview" id="thumbnailPreview">
-          <img id="thumbnailImg" src="" alt="">
+          <div id="thumbnailImg" style="background-size: auto; background-repeat: no-repeat;"></div>
           <div class="thumbnail-time" id="thumbnailTime">0:00</div>
         </div>
       </div>
@@ -718,7 +718,12 @@
       if (!thumbnailTrack) return;
 
       try {
-        const response = await fetch(proxyUrl(thumbnailTrack.file));
+        let vttUrl = thumbnailTrack.file;
+        if (!vttUrl.startsWith('/proxy?url=')) {
+          vttUrl = proxyUrl(vttUrl);
+        }
+        
+        const response = await fetch(vttUrl);
         const vttText = await response.text();
         const lines = vttText.split('\n');
         
@@ -735,11 +740,14 @@
               if (nextLine.includes('#xywh=')) {
                 const match = nextLine.match(/#xywh=(\d+),(\d+),(\d+),(\d+)/);
                 if (match) {
-                  const url = nextLine.split('#')[0];
+                  let spriteUrl = nextLine.split('#')[0];
+                  if (!spriteUrl.startsWith('/proxy?url=')) {
+                    spriteUrl = proxyUrl(spriteUrl);
+                  }
                   thumbnailData.push({
                     start: startTime,
                     end: endTime,
-                    url: url,
+                    url: spriteUrl,
                     x: parseInt(match[1]),
                     y: parseInt(match[2]),
                     width: parseInt(match[3]),
@@ -751,9 +759,7 @@
           }
         }
         
-        if (thumbnailData.length > 0) {
-          thumbnailImg.src = proxyUrl(thumbnailData[0].url);
-        }
+        console.log('Loaded thumbnails:', thumbnailData.length);
       } catch (error) {
         console.error('Failed to load thumbnails:', error);
       }
@@ -1086,16 +1092,16 @@
         const thumbnailTimeEl = document.getElementById('thumbnailTime');
         const thumbnailImgEl = document.getElementById('thumbnailImg');
         
-        thumbnailImgEl.src = proxyUrl(thumbnail.url);
-        thumbnailImgEl.style.backgroundImage = `url(${proxyUrl(thumbnail.url)})`;
+        thumbnailImgEl.style.backgroundImage = `url("${thumbnail.url}")`;
         thumbnailImgEl.style.backgroundPosition = `-${thumbnail.x}px -${thumbnail.y}px`;
+        thumbnailImgEl.style.backgroundSize = `auto auto`;
         thumbnailImgEl.style.width = thumbnail.width + 'px';
         thumbnailImgEl.style.height = thumbnail.height + 'px';
-        thumbnailImgEl.style.display = 'block';
         
         thumbnailTimeEl.textContent = formatTime(time);
         
-        thumbnailPreview.style.left = e.clientX - rect.left + 'px';
+        const previewLeft = Math.min(Math.max(0, e.clientX - rect.left - thumbnail.width / 2), rect.width - thumbnail.width);
+        thumbnailPreview.style.left = previewLeft + 'px';
         thumbnailPreview.style.display = 'flex';
       }
     });
