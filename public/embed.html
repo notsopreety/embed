@@ -323,14 +323,74 @@
       right: 0;
       background: rgba(28, 28, 28, 0.95);
       border-radius: 8px;
-      min-width: 200px;
-      max-height: 300px;
-      overflow-y: auto;
+      min-width: 280px;
+      max-height: 400px;
       display: none;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      flex-direction: column;
     }
 
     .settings-menu.show {
+      display: flex;
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .settings-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0;
+    }
+
+    .settings-tab-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      padding: 8px 12px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+      position: relative;
+    }
+
+    .settings-tab-btn:hover {
+      color: #fff;
+    }
+
+    .settings-tab-btn.active {
+      color: #e50914;
+    }
+
+    .settings-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #e50914;
+    }
+
+    .settings-content {
+      overflow-y: auto;
+      max-height: 320px;
+      padding: 0;
+    }
+
+    .settings-section {
+      display: none;
+    }
+
+    .settings-section.active {
       display: block;
     }
 
@@ -709,25 +769,22 @@
         </div>
 
         <div class="settings-container">
-          <button class="control-btn" id="subtitlesBtn" title="Subtitles (C)">
-            <svg viewBox="0 0 24 24"><path d="M18,11H16.5V10.5H14.5V13.5H16.5V13H18V14A1,1 0 0,1 17,15H14A1,1 0 0,1 13,14V10A1,1 0 0,1 14,9H17A1,1 0 0,1 18,10M11,11H9.5V10.5H7.5V13.5H9.5V13H11V14A1,1 0 0,1 10,15H7A1,1 0 0,1 6,14V10A1,1 0 0,1 7,9H10A1,1 0 0,1 11,10M19,4H5C3.89,4 3,4.89 3,6V18A2,2 0 0,0 5,20H19A2,2 0 0,0 21,18V6C21,4.89 20.1,4 19,4Z"/></svg>
+          <button class="control-btn" id="settingsBtn" title="Settings (S)">
+            <svg viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.98C19.47,12.66 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11.02L21.85,9.37C22.04,9.22 22.1,8.95 21.95,8.73L19.66,5.27C19.54,5.06 19.27,5 19.05,5.12L16.56,6.07C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.07L4.95,5.12C4.73,5 4.46,5.06 4.34,5.27L2.05,8.73C1.9,8.95 1.96,9.22 2.15,9.37L4.57,11.02C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.66 4.57,12.98L2.15,14.63C1.96,14.78 1.9,15.05 2.05,15.27L4.34,18.73C4.46,18.94 4.73,19 4.95,18.88L7.44,17.93C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.93L19.05,18.88C19.27,19 19.54,18.94 19.66,18.73L21.95,15.27C22.1,15.05 22.04,14.78 21.85,14.63L19.43,12.98Z"/></svg>
           </button>
-          <div class="settings-menu" id="subtitlesMenu">
-            <div class="settings-option active" data-value="">
-              <span>Off</span>
-              <span class="check">✓</span>
+          <div class="settings-menu" id="settingsMenu">
+            <div class="settings-header">
+              <div class="settings-tabs">
+                <button class="settings-tab-btn active" data-tab="quality" title="Quality">📊</button>
+                <button class="settings-tab-btn" data-tab="captions" title="Closed Captions">📝</button>
+                <button class="settings-tab-btn" data-tab="speed" title="Playback Speed">⏱️</button>
+              </div>
+              <button id="closeSettingsBtn" style="background:none;border:none;color:#fff;cursor:pointer;font-size:18px;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;">×</button>
             </div>
-          </div>
-        </div>
-
-        <div class="settings-container">
-          <button class="control-btn" id="qualityBtn" title="Quality">
-            <svg viewBox="0 0 24 24"><path d="M14,12H15.5V14.82L17.94,16.23L17.19,17.53L14,15.69V12M4,2H18A2,2 0 0,1 20,4V10.1C21.24,11.36 22,13.09 22,15A7,7 0 0,1 15,22C13.09,22 11.36,21.24 10.1,20H4A2,2 0 0,1 2,18V4A2,2 0 0,1 4,2M4,15V18H8.67C8.24,17.09 8,16.07 8,15H4M4,8H10V5H4V8M18,8V5H12V8H18M4,13H8.29C8.63,11.85 9.26,10.82 10.1,10H4V13M15,10.15A4.85,4.85 0 0,0 10.15,15C10.15,17.68 12.32,19.85 15,19.85A4.85,4.85 0 0,0 19.85,15C19.85,12.32 17.68,10.15 15,10.15Z"/></svg>
-          </button>
-          <div class="settings-menu" id="qualityMenu">
-            <div class="settings-option active" data-value="-1">
-              <span>Auto</span>
-              <span class="check">✓</span>
+            <div class="settings-content">
+              <div class="settings-section active" data-section="quality" id="qualitySection"></div>
+              <div class="settings-section" data-section="captions" id="captionsSection"></div>
+              <div class="settings-section" data-section="speed" id="speedSection"></div>
             </div>
           </div>
         </div>
@@ -765,10 +822,12 @@
     const currentTimeEl = document.getElementById('currentTime');
     const durationEl = document.getElementById('duration');
 
-    const qualityBtn = document.getElementById('qualityBtn');
-    const qualityMenu = document.getElementById('qualityMenu');
-    const subtitlesBtn = document.getElementById('subtitlesBtn');
-    const subtitlesMenu = document.getElementById('subtitlesMenu');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+    const qualitySection = document.getElementById('qualitySection');
+    const captionsSection = document.getElementById('captionsSection');
+    const speedSection = document.getElementById('speedSection');
 
     const subBtn = document.getElementById('subBtn');
     const dubBtn = document.getElementById('dubBtn');
@@ -789,6 +848,7 @@
     let outroEnd = 0;
     let thumbnailData = null;
     let thumbnailImg = new Image();
+    const playbackSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5];
 
     async function loadThumbnails(tracks) {
       const thumbnailTrack = tracks.find(t => t.kind === 'thumbnails');
@@ -950,7 +1010,7 @@
     }
 
     function populateSubtitles(tracks) {
-      subtitlesMenu.innerHTML = '<div class="settings-option active" data-value=""><span>Off</span><span class="check">✓</span></div>';
+      captionsSection.innerHTML = '<div class="settings-option active" data-value=""><span>Off</span><span class="check">✓</span></div>';
       const captionTracks = tracks.filter(t => t.kind === 'captions');
       captionTracks.forEach(track => {
         const option = document.createElement('div');
@@ -959,11 +1019,12 @@
         option.innerHTML = `<span>${track.label}</span><span class="check">✓</span>`;
         if (track.default) {
           option.classList.add('active');
-          subtitlesMenu.querySelector('[data-value=""]').classList.remove('active');
+          captionsSection.querySelector('[data-value=""]').classList.remove('active');
           loadSubtitle(track.file);
         }
-        subtitlesMenu.appendChild(option);
+        captionsSection.appendChild(option);
       });
+      populatePlaybackSpeeds();
     }
 
     function loadSubtitle(url) {
@@ -981,13 +1042,24 @@
 
     function populateQualityLevels() {
       if (!hls) return;
-      qualityMenu.innerHTML = '<div class="settings-option active" data-value="-1"><span>Auto</span><span class="check">✓</span></div>';
+      qualitySection.innerHTML = '<div class="settings-option active" data-value="-1"><span>Auto</span><span class="check">✓</span></div>';
       hls.levels.forEach((level, index) => {
         const option = document.createElement('div');
         option.className = 'settings-option';
         option.dataset.value = index;
         option.innerHTML = `<span>${level.height}p</span><span class="check">✓</span>`;
-        qualityMenu.appendChild(option);
+        qualitySection.appendChild(option);
+      });
+    }
+
+    function populatePlaybackSpeeds() {
+      speedSection.innerHTML = '';
+      playbackSpeeds.forEach(speed => {
+        const option = document.createElement('div');
+        option.className = 'settings-option' + (video.playbackRate === speed ? ' active' : '');
+        option.dataset.value = speed;
+        option.innerHTML = `<span>${speed === 1 ? '1x' : speed + 'x'}</span><span class="check">✓</span>`;
+        speedSection.appendChild(option);
       });
     }
 
@@ -1261,44 +1333,50 @@
       video.currentTime = outroEnd;
     });
 
-    qualityBtn.addEventListener('click', (e) => {
+    settingsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      subtitlesMenu.classList.remove('show');
-      qualityMenu.classList.toggle('show');
+      settingsMenu.classList.toggle('show');
     });
 
-    subtitlesBtn.addEventListener('click', (e) => {
+    closeSettingsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      qualityMenu.classList.remove('show');
-      subtitlesMenu.classList.toggle('show');
+      settingsMenu.classList.remove('show');
     });
 
-    qualityMenu.addEventListener('click', (e) => {
+    document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const tabName = btn.dataset.tab;
+        document.querySelectorAll('.settings-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelector(`[data-section="${tabName}"]`).classList.add('active');
+      });
+    });
+
+    settingsMenu.addEventListener('click', (e) => {
       const option = e.target.closest('.settings-option');
       if (option) {
-        qualityMenu.querySelectorAll('.settings-option').forEach(o => o.classList.remove('active'));
-        option.classList.add('active');
-        const level = parseInt(option.dataset.value);
-        if (hls) {
-          hls.currentLevel = level;
+        const section = option.closest('.settings-section');
+        if (section.id === 'qualitySection') {
+          qualitySection.querySelectorAll('.settings-option').forEach(o => o.classList.remove('active'));
+          option.classList.add('active');
+          const level = parseInt(option.dataset.value);
+          if (hls) hls.currentLevel = level;
+        } else if (section.id === 'captionsSection') {
+          captionsSection.querySelectorAll('.settings-option').forEach(o => o.classList.remove('active'));
+          option.classList.add('active');
+          loadSubtitle(option.dataset.value);
+        } else if (section.id === 'speedSection') {
+          speedSection.querySelectorAll('.settings-option').forEach(o => o.classList.remove('active'));
+          option.classList.add('active');
+          video.playbackRate = parseFloat(option.dataset.value);
         }
-        qualityMenu.classList.remove('show');
-      }
-    });
-
-    subtitlesMenu.addEventListener('click', (e) => {
-      const option = e.target.closest('.settings-option');
-      if (option) {
-        subtitlesMenu.querySelectorAll('.settings-option').forEach(o => o.classList.remove('active'));
-        option.classList.add('active');
-        loadSubtitle(option.dataset.value);
-        subtitlesMenu.classList.remove('show');
       }
     });
 
     document.addEventListener('click', () => {
-      qualityMenu.classList.remove('show');
-      subtitlesMenu.classList.remove('show');
+      settingsMenu.classList.remove('show');
     });
 
     video.addEventListener('play', updatePlayPauseIcons);
