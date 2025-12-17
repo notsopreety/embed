@@ -1,0 +1,23 @@
+entrypoint = "index.ts"
+
+hidden = [".config", "bun.lock"]
+modules = ["bun-1.2"]
+
+[nix]
+channel = "stable-24_11"
+
+[deployment]
+build = ["sh", "-c", "bun build --target=bun --outdir=dist index.ts"]
+run = ["bun", "dist/index.js"]
+deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[agent]
+expertMode = true
