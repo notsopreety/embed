@@ -1965,7 +1965,6 @@
       ccPreview.style.fontSize = fontSizeSlider.value + 'px';
       ccPreview.style.opacity = textOpacitySlider.value / 100;
       ccPreview.style.fontFamily = fontFamilySelect.value;
-      ccPreview.style.transform = `translate(${positionHorizontal.value}px, ${positionVertical.value}px)`;
       applyShadow(shadowSelect.value);
     }
 
@@ -1994,13 +1993,11 @@
     positionVertical.addEventListener('input', () => {
       positionVerticalValue.textContent = positionVertical.value + 'px';
       document.documentElement.style.setProperty('--cc-position-vertical', positionVertical.value + 'px');
-      ccPreview.style.transform = `translate(${positionHorizontal.value}px, ${positionVertical.value}px)`;
     });
 
     positionHorizontal.addEventListener('input', () => {
       positionHorizontalValue.textContent = positionHorizontal.value + 'px';
       document.documentElement.style.setProperty('--cc-position-horizontal', positionHorizontal.value + 'px');
-      ccPreview.style.transform = `translate(${positionHorizontal.value}px, ${positionVertical.value}px)`;
     });
 
     shadowSelect.addEventListener('change', () => {
