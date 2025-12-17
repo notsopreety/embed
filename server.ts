@@ -115,6 +115,10 @@ app.get('/api/stream', async (req: Request, res: Response) => {
   }
 });
 
+app.get('/embed', (req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'embed.html'));
+});
+
 app.get('/embed/:id', (req: Request, res: Response) => {
   res.sendFile(path.join(process.cwd(), 'public', 'embed.html'));
 });

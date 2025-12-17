@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Player</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .player-wrapper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #000;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+    }
+    .error {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.95);
+      color: #ff6b6b;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 16px;
+      display: none;
+      z-index: 100;
+      max-width: 400px;
+      border: 1px solid #ff6b6b;
+    }
+    .loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      z-index: 50;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="player-wrapper">
+    <video id="video" controls crossorigin="anonymous"></video>
+    <div class="loader" id="loader"><div class="spinner"></div></div>
+    <div id="error" class="error"></div>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const errorEl = document.getElementById('error');
+    const loaderEl = document.getElementById('loader');
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const pathSegments = window.location.pathname.split('/').filter(s => s);
+    const id = pathSegments[pathSegments.length - 1] === 'embed' ? (pathSegments[pathSegments.length - 2] || urlParams.get('id') || 'solo-leveling-18718::ep=114721') : (pathSegments[pathSegments.indexOf('embed') + 1] || urlParams.get('id') || 'solo-leveling-18718::ep=114721');
+    const type = (urlParams.get('type') || 'sub').toLowerCase();
+    const server = (urlParams.get('server') || 'hd-2').toLowerCase();
+    let hls = null;
+
+    console.log('Embed player initializing with ID:', id, 'Type:', type, 'Server:', server);
+
+    function showError(msg) {
+      console.error('Error:', msg);
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+      loaderEl.style.display = 'none';
+    }
+
+    function showLoader() {
+      loaderEl.style.display = 'block';
+      errorEl.style.display = 'none';
+    }
+
+    function proxyUrl(url) {
+      if (!url || typeof url !== 'string') return '';
+      if (url.startsWith('/proxy?url=')) return url;
+      return '/proxy?url=' + encodeURIComponent(url);
+    }
+
+    async function init() {
+      try {
+        showLoader();
+        const apiUrl = `/api/stream?id=${encodeURIComponent(id)}&server=${encodeURIComponent(server)}`;
+        console.log('Fetching:', apiUrl);
+        
+        const response = await fetch(apiUrl);
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          showError('Failed to load stream (HTTP ' + response.status + ')');
+          return;
+        }
+
+        const result = await response.json();
+        console.log('Stream data:', result);
+        
+        if (!result.success || !result.data) {
+          showError('Stream data not available');
+          return;
+        }
+
+        const streamData = result.data;
+        const sourceData = type === 'dub' ? streamData.dub : streamData.sub;
+        
+        if (!sourceData) {
+          showError('Stream type "' + type + '" not available');
+          return;
+        }
+
+        let hlsUrl = null;
+        if (typeof sourceData.link === 'string') {
+          hlsUrl = sourceData.link;
+        } else if (sourceData.link && typeof sourceData.link === 'object') {
+          hlsUrl = sourceData.link.file;
+        }
+
+        if (!hlsUrl) {
+          showError('Stream URL not found');
+          return;
+        }
+
+        console.log('HLS URL:', hlsUrl);
+
+        if (Array.isArray(sourceData.tracks)) {
+          sourceData.tracks.forEach(track => {
+            if (track.kind === 'captions' && track.file) {
+              const trackEl = document.createElement('track');
+              trackEl.kind = 'subtitles';
+              trackEl.src = proxyUrl(track.file);
+              trackEl.srclang = track.srclang || 'en';
+              trackEl.label = track.label || 'Subtitle';
+              if (track.default) trackEl.default = true;
+              video.appendChild(trackEl);
+            }
+          });
+        }
+
+        if (Hls.isSupported()) {
+          console.log('Using HLS.js');
+          hls = new Hls({
+            debug: false,
+            enableWorker: true,
+            manifestLoadPolicy: {
+              default: {
+                maxLoadTimeMs: 20000,
+                timeoutRetry: { maxNumRetry: 3, retryDelayMs: 1000 },
+                errorRetry: { maxNumRetry: 3, retryDelayMs: 1000, maxRetryDelayMs: 8000 }
+              }
+            },
+            playlistLoadPolicy: {
+              default: {
+                maxLoadTimeMs: 20000,
+                timeoutRetry: { maxNumRetry: 3, retryDelayMs: 1000 },
+                errorRetry: { maxNumRetry: 3, retryDelayMs: 1000, maxRetryDelayMs: 8000 }
+              }
+            },
+            fragLoadPolicy: {
+              default: {
+                maxLoadTimeMs: 120000,
+                timeoutRetry: { maxNumRetry: 4, retryDelayMs: 1000 },
+                errorRetry: { maxNumRetry: 6, retryDelayMs: 1000, maxRetryDelayMs: 8000 }
+              }
+            }
+          });
+
+          hls.loadSource(proxyUrl(hlsUrl));
+          hls.attachMedia(video);
+          
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            console.log('Manifest parsed, starting playback');
+            loaderEl.style.display = 'none';
+            video.play().catch(e => console.log('Auto-play prevented:', e));
+          });
+          
+          hls.on(Hls.Events.ERROR, (event, data) => {
+            console.error('HLS Error:', data);
+            if (data.fatal) {
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  console.log('Network error, retrying...');
+                  if (hls) hls.startLoad();
+                  break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  console.log('Media error, recovering...');
+                  if (hls) hls.recoverMediaError();
+                  break;
+                default:
+                  showError('Playback error: ' + data.details);
+              }
+            }
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          console.log('Using native HLS');
+          video.src = proxyUrl(hlsUrl);
+          loaderEl.style.display = 'none';
+        } else {
+          showError('HLS playback not supported in this browser');
+        }
+      } catch (error) {
+        showError('Error: ' + error.message);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
