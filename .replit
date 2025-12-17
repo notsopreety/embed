@@ -5,6 +5,7 @@ modules = ["bun-1.2"]
 
 [nix]
 channel = "stable-24_11"
+packages = ["nano"]
 
 [deployment]
 build = ["sh", "-c", "bun build --target=bun --outdir=dist server.ts"]
