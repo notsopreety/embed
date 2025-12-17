@@ -48,7 +48,6 @@
       text-align: center;
       white-space: pre-wrap;
       word-wrap: break-word;
-      margin-bottom: var(--caption-margin, 0px);
     }
 
     ::cue-background {
@@ -1642,10 +1641,7 @@
             }
           }
         }
-        
-        console.log('Loaded', thumbnailData.length, 'thumbnail frames');
       } catch (error) {
-        console.error('Failed to load thumbnails:', error);
       }
     }
 
@@ -1729,31 +1725,12 @@
       }
     }
 
-    function updateCaptionMargin() {
-      const width = window.innerWidth;
-      const isVisible = playerWrapper.classList.contains('show-controls');
-      
-      let margin;
-      if (isVisible) {
-        if (width > 1024) margin = '120px';
-        else if (width > 768) margin = '100px';
-        else if (width > 480) margin = '85px';
-        else margin = '70px';
-      } else {
-        margin = '0px';
-      }
-      
-      document.documentElement.style.setProperty('--caption-margin', margin);
-    }
-
     function showControls() {
       playerWrapper.classList.add('show-controls');
-      updateCaptionMargin();
       clearTimeout(controlsTimeout);
       if (!video.paused) {
         controlsTimeout = setTimeout(() => {
           playerWrapper.classList.remove('show-controls');
-          updateCaptionMargin();
         }, 3000);
       }
     }
@@ -1898,7 +1875,6 @@
         });
 
         hls.on(Hls.Events.ERROR, (event, data) => {
-          console.error('HLS Error:', data);
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
@@ -1955,7 +1931,6 @@
         loadStream(currentAudioType);
 
       } catch (error) {
-        console.error('Init error:', error);
         showError('Error: ' + error.message);
       }
     }
@@ -2393,8 +2368,6 @@
       showControls();
     });
 
-    window.addEventListener('resize', updateCaptionMargin);
-    updateCaptionMargin();
     init();
   </script>
 </body>
