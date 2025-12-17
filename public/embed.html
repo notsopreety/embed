@@ -1281,33 +1281,11 @@
           </div>
 
           <div class="cc-control-group">
-            <label class="cc-control-label">Background Color</label>
-            <div class="cc-color-picker" id="bgColorPicker"></div>
-          </div>
-
-          <div class="cc-control-group">
             <label class="cc-control-label">Background Opacity</label>
             <div style="display:flex;gap:8px;align-items:center;">
               <input type="range" class="cc-slider" id="bgOpacitySlider" min="0" max="100" value="0">
               <span class="cc-slider-value" id="bgOpacityValue">0%</span>
             </div>
-          </div>
-
-          <div class="cc-control-group">
-            <label class="cc-control-label">Text Stroke</label>
-            <select class="cc-dropdown" id="strokeToggle">
-              <option value="enabled">Enabled</option>
-              <option value="disabled">Disabled</option>
-            </select>
-          </div>
-
-          <div class="cc-control-group">
-            <label class="cc-control-label">Subtitle Position</label>
-            <select class="cc-dropdown" id="positionSelect">
-              <option value="bottom">Bottom</option>
-              <option value="top">Top</option>
-              <option value="center">Center</option>
-            </select>
           </div>
 
           <div class="cc-control-group">
@@ -1322,15 +1300,18 @@
           </div>
 
           <div class="cc-control-group">
-            <label class="cc-control-label">Window Color</label>
-            <div class="cc-color-picker" id="windowColorPicker"></div>
+            <label class="cc-control-label">Subtitle Vertical Position (px)</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="number" class="cc-slider" id="positionVertical" min="-100" max="100" value="0">
+              <span class="cc-slider-value">px</span>
+            </div>
           </div>
 
           <div class="cc-control-group">
-            <label class="cc-control-label">Window Opacity</label>
+            <label class="cc-control-label">Subtitle Horizontal Position (px)</label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input type="range" class="cc-slider" id="windowOpacitySlider" min="0" max="100" value="0">
-              <span class="cc-slider-value" id="windowOpacityValue">0%</span>
+              <input type="number" class="cc-slider" id="positionHorizontal" min="-100" max="100" value="0">
+              <span class="cc-slider-value">px</span>
             </div>
           </div>
         </div>
@@ -1381,28 +1362,23 @@
     const textOpacityValue = document.getElementById('textOpacityValue');
     const bgOpacitySlider = document.getElementById('bgOpacitySlider');
     const bgOpacityValue = document.getElementById('bgOpacityValue');
-    const windowOpacitySlider = document.getElementById('windowOpacitySlider');
-    const windowOpacityValue = document.getElementById('windowOpacityValue');
     const fontFamilySelect = document.getElementById('fontFamilySelect');
     const shadowSelect = document.getElementById('shadowSelect');
-    const strokeToggle = document.getElementById('strokeToggle');
-    const positionSelect = document.getElementById('positionSelect');
+    const positionVertical = document.getElementById('positionVertical');
+    const positionHorizontal = document.getElementById('positionHorizontal');
     const ccResetBtn = document.getElementById('ccResetBtn');
     const ccSaveBtn = document.getElementById('ccSaveBtn');
 
-    const ccColors = ['#000000', '#0000FF', '#00FF00', '#00FFFF', '#FF0000', '#FF00FF', '#FFFF00', '#0099FF'];
+    const ccColors = ['#FFFFFF', '#0000FF', '#00FF00', '#00FFFF', '#FF0000', '#FF00FF', '#FFFF00', '#0099FF'];
     const ccDefaults = {
       fontSize: 16,
       fontColor: '#FFFFFF',
       textOpacity: 100,
       fontFamily: 'Arial',
-      bgColor: '#000000',
       bgOpacity: 0,
       shadow: 'edge-shadow',
-      windowColor: '#000000',
-      windowOpacity: 0,
-      strokeEnabled: 'enabled',
-      subtitlePosition: 'bottom'
+      positionVertical: 0,
+      positionHorizontal: 0
     };
 
     const subBtn = document.getElementById('subBtn');
@@ -1953,9 +1929,7 @@
 
     function createColorPickers() {
       const pickers = [
-        { id: 'fontColorPicker', active: '#FFFFFF' },
-        { id: 'bgColorPicker', active: '#000000' },
-        { id: 'windowColorPicker', active: '#000000' }
+        { id: 'fontColorPicker', active: '#FFFFFF' }
       ];
       pickers.forEach(picker => {
         const container = document.getElementById(picker.id);
@@ -1968,14 +1942,8 @@
             e.stopPropagation();
             container.querySelectorAll('.cc-color-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            if (picker.id === 'fontColorPicker') {
-              document.documentElement.style.setProperty('--cc-text-color', color);
-              ccPreview.style.color = color;
-            } else if (picker.id === 'bgColorPicker') {
-              document.documentElement.style.setProperty('--cc-bg-color', color);
-            } else {
-              document.documentElement.style.setProperty('--cc-window-color', color);
-            }
+            document.documentElement.style.setProperty('--cc-text-color', color);
+            ccPreview.style.color = color;
           });
           container.appendChild(btn);
         });
@@ -2005,33 +1973,17 @@
       document.documentElement.style.setProperty('--cc-bg-opacity', bgOpacitySlider.value / 100);
     });
 
-    windowOpacitySlider.addEventListener('input', () => {
-      windowOpacityValue.textContent = windowOpacitySlider.value + '%';
-      document.documentElement.style.setProperty('--cc-window-opacity', windowOpacitySlider.value / 100);
-    });
-
     fontFamilySelect.addEventListener('change', () => {
       document.documentElement.style.setProperty('--cc-font-family', fontFamilySelect.value);
       updateCCPreview();
     });
 
-    strokeToggle.addEventListener('change', () => {
-      const strokeValue = strokeToggle.value === 'enabled' ? '1px' : 'none';
-      document.documentElement.style.setProperty('--cc-text-stroke', strokeValue);
+    positionVertical.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--cc-position-vertical', positionVertical.value + 'px');
     });
 
-    positionSelect.addEventListener('change', () => {
-      document.documentElement.style.setProperty('--cc-position', positionSelect.value);
-      const videoElement = document.querySelector('video');
-      if (videoElement) {
-        if (positionSelect.value === 'top') {
-          videoElement.style.justifyContent = 'flex-start';
-        } else if (positionSelect.value === 'center') {
-          videoElement.style.justifyContent = 'center';
-        } else {
-          videoElement.style.justifyContent = 'flex-end';
-        }
-      }
+    positionHorizontal.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--cc-position-horizontal', positionHorizontal.value + 'px');
     });
 
     ccBtn.addEventListener('click', (e) => {
@@ -2048,31 +2000,22 @@
       fontSizeSlider.value = ccDefaults.fontSize;
       textOpacitySlider.value = ccDefaults.textOpacity;
       bgOpacitySlider.value = ccDefaults.bgOpacity;
-      windowOpacitySlider.value = ccDefaults.windowOpacity;
       fontFamilySelect.value = ccDefaults.fontFamily;
       shadowSelect.value = ccDefaults.shadow;
-      strokeToggle.value = ccDefaults.strokeEnabled;
-      positionSelect.value = ccDefaults.subtitlePosition;
+      positionVertical.value = ccDefaults.positionVertical;
+      positionHorizontal.value = ccDefaults.positionHorizontal;
       fontSizeValue.textContent = ccDefaults.fontSize + 'px';
       textOpacityValue.textContent = ccDefaults.textOpacity + '%';
       bgOpacityValue.textContent = ccDefaults.bgOpacity + '%';
-      windowOpacityValue.textContent = ccDefaults.windowOpacity + '%';
       document.documentElement.style.setProperty('--cc-font-size', ccDefaults.fontSize + 'px');
       document.documentElement.style.setProperty('--cc-text-opacity', ccDefaults.textOpacity / 100);
       document.documentElement.style.setProperty('--cc-bg-opacity', ccDefaults.bgOpacity / 100);
-      document.documentElement.style.setProperty('--cc-window-opacity', ccDefaults.windowOpacity / 100);
       document.documentElement.style.setProperty('--cc-text-color', ccDefaults.fontColor);
-      document.documentElement.style.setProperty('--cc-bg-color', ccDefaults.bgColor);
-      document.documentElement.style.setProperty('--cc-window-color', ccDefaults.windowColor);
       document.documentElement.style.setProperty('--cc-font-family', ccDefaults.fontFamily);
-      document.documentElement.style.setProperty('--cc-text-stroke', ccDefaults.strokeEnabled === 'enabled' ? '1px' : 'none');
-      document.documentElement.style.setProperty('--cc-position', ccDefaults.subtitlePosition);
+      document.documentElement.style.setProperty('--cc-position-vertical', ccDefaults.positionVertical + 'px');
+      document.documentElement.style.setProperty('--cc-position-horizontal', ccDefaults.positionHorizontal + 'px');
       document.querySelectorAll('#fontColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('#fontColorPicker .cc-color-btn')[1].classList.add('active');
-      document.querySelectorAll('#bgColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('#bgColorPicker .cc-color-btn')[0].classList.add('active');
-      document.querySelectorAll('#windowColorPicker .cc-color-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('#windowColorPicker .cc-color-btn')[0].classList.add('active');
+      document.querySelectorAll('#fontColorPicker .cc-color-btn')[0].classList.add('active');
       ccPreview.style.color = ccDefaults.fontColor;
       updateCCPreview();
     });
