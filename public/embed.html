@@ -1730,8 +1730,12 @@
       clearTimeout(controlsTimeout);
       if (!video.paused) {
         controlsTimeout = setTimeout(() => {
-          playerWrapper.classList.remove('show-controls');
-        }, 3000);
+          const settingsMenuOpen = document.querySelector('.settings-menu.show');
+          const ccModalOpen = document.querySelector('.cc-modal-overlay.show');
+          if (!settingsMenuOpen && !ccModalOpen) {
+            playerWrapper.classList.remove('show-controls');
+          }
+        }, 5000);
       }
     }
 
