@@ -48,23 +48,28 @@
       text-align: center;
       white-space: pre-wrap;
       word-wrap: break-word;
+      margin-bottom: 0px;
+      transition: margin-bottom 0.3s ease;
+    }
+
+    .player-wrapper.show-controls ::cue {
       margin-bottom: 120px;
     }
 
     @media (max-width: 1024px) {
-      ::cue {
+      .player-wrapper.show-controls ::cue {
         margin-bottom: 100px;
       }
     }
 
     @media (max-width: 768px) {
-      ::cue {
+      .player-wrapper.show-controls ::cue {
         margin-bottom: 85px;
       }
     }
 
     @media (max-width: 480px) {
-      ::cue {
+      .player-wrapper.show-controls ::cue {
         margin-bottom: 70px;
       }
     }
