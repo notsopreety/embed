@@ -162,7 +162,6 @@
 
     .thumbnail-preview {
       position: absolute;
-      bottom: 40px;
       transform: translateX(-50%);
       background: rgba(20, 20, 20, 0.95);
       border: 2px solid #e50914;
@@ -500,18 +499,7 @@
       right: 0;
     }
 
-    @media (max-width: 1200px) {
-      .thumbnail-preview {
-        bottom: 35px;
-      }
-    }
-
     @media (max-width: 768px) {
-      .thumbnail-preview {
-        bottom: 30px;
-        border-width: 2px;
-      }
-
       .thumbnail-time {
         font-size: 12px;
         padding: 5px 10px;
@@ -561,11 +549,6 @@
         right: 10px;
         padding: 8px 16px;
         font-size: 12px;
-      }
-
-      .thumbnail-preview {
-        bottom: 25px;
-        max-width: 90vw;
       }
 
       .thumbnail-time {
@@ -1154,10 +1137,14 @@
         
         thumbnailTimeEl.textContent = formatTime(time);
         
-        // Center the preview on cursor, keeping it within bounds
-        let previewLeft = e.clientX - rect.left - displayWidth / 2;
+        // Position directly above cursor, horizontally centered on hover point
+        const hoverX = e.clientX - rect.left;
+        let previewLeft = hoverX - displayWidth / 2;
         previewLeft = Math.max(0, Math.min(previewLeft, rect.width - displayWidth));
+        
         thumbnailPreview.style.left = previewLeft + 'px';
+        thumbnailPreview.style.bottom = 'auto';
+        thumbnailPreview.style.top = (-displayHeight - 12) + 'px';
         thumbnailPreview.style.display = 'flex';
       }
     });
