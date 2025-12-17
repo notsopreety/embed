@@ -945,7 +945,12 @@
       }
     }
 
+    function clearSubtitles() {
+      video.querySelectorAll('track[kind="subtitles"]').forEach(t => t.remove());
+    }
+
     function populateSubtitles(tracks) {
+      clearSubtitles();
       subtitlesMenu.innerHTML = '<div class="settings-option active" data-value=""><span>Off</span><span class="check">✓</span></div>';
       const captionTracks = tracks.filter(t => t.kind === 'captions');
       captionTracks.forEach(track => {
@@ -963,8 +968,7 @@
     }
 
     function loadSubtitle(url) {
-      const existingTracks = video.querySelectorAll('track[kind="subtitles"]');
-      existingTracks.forEach(t => t.remove());
+      clearSubtitles();
       if (url) {
         const track = document.createElement('track');
         track.kind = 'subtitles';
