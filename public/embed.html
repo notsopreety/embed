@@ -162,30 +162,41 @@
 
     .thumbnail-preview {
       position: absolute;
-      bottom: 20px;
+      bottom: 40px;
       transform: translateX(-50%);
-      background: #000;
-      border: 2px solid #fff;
-      border-radius: 4px;
+      background: rgba(20, 20, 20, 0.95);
+      border: 2px solid #e50914;
+      border-radius: 8px;
       display: none;
       flex-direction: column;
       align-items: center;
       pointer-events: none;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 20px rgba(229, 9, 20, 0.2);
+      padding: 0;
+      overflow: hidden;
+      z-index: 100;
     }
 
     .thumbnail-sprite {
       background-size: auto;
       background-repeat: no-repeat;
       background-position: 0 0;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 2px;
+      background-color: transparent;
+      display: block;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
     }
 
     .thumbnail-time {
       color: #fff;
-      font-size: 12px;
-      padding: 4px 8px;
-      background: rgba(0, 0, 0, 0.8);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      background: rgba(0, 0, 0, 0.9);
+      width: 100%;
+      text-align: center;
+      border-top: 1px solid rgba(229, 9, 20, 0.3);
+      letter-spacing: 0.5px;
     }
 
     .controls-row {
@@ -489,6 +500,24 @@
       right: 0;
     }
 
+    @media (max-width: 1200px) {
+      .thumbnail-preview {
+        bottom: 35px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .thumbnail-preview {
+        bottom: 30px;
+        border-width: 2px;
+      }
+
+      .thumbnail-time {
+        font-size: 12px;
+        padding: 5px 10px;
+      }
+    }
+
     @media (max-width: 600px) {
       .controls-wrapper {
         padding: 40px 8px 8px;
@@ -532,6 +561,16 @@
         right: 10px;
         padding: 8px 16px;
         font-size: 12px;
+      }
+
+      .thumbnail-preview {
+        bottom: 25px;
+        max-width: 90vw;
+      }
+
+      .thumbnail-time {
+        font-size: 11px;
+        padding: 4px 8px;
       }
     }
   </style>
@@ -1097,12 +1136,28 @@
         thumbnailImgEl.style.backgroundPosition = `-${thumbnail.x}px -${thumbnail.y}px`;
         thumbnailImgEl.style.backgroundRepeat = 'no-repeat';
         thumbnailImgEl.style.backgroundSize = 'auto';
-        thumbnailImgEl.style.width = thumbnail.width + 'px';
-        thumbnailImgEl.style.height = thumbnail.height + 'px';
+        
+        // Responsive sizing based on screen width
+        let displayWidth = thumbnail.width;
+        let displayHeight = thumbnail.height;
+        
+        if (window.innerWidth <= 600) {
+          displayWidth = Math.min(thumbnail.width, 120);
+          displayHeight = Math.min(thumbnail.height, 68);
+        } else if (window.innerWidth <= 768) {
+          displayWidth = Math.min(thumbnail.width, 140);
+          displayHeight = Math.min(thumbnail.height, 79);
+        }
+        
+        thumbnailImgEl.style.width = displayWidth + 'px';
+        thumbnailImgEl.style.height = displayHeight + 'px';
         
         thumbnailTimeEl.textContent = formatTime(time);
         
-        thumbnailPreview.style.left = Math.min(rect.width - thumbnail.width / 2, Math.max(0, e.clientX - rect.left - thumbnail.width / 2)) + 'px';
+        // Center the preview on cursor, keeping it within bounds
+        let previewLeft = e.clientX - rect.left - displayWidth / 2;
+        previewLeft = Math.max(0, Math.min(previewLeft, rect.width - displayWidth));
+        thumbnailPreview.style.left = previewLeft + 'px';
         thumbnailPreview.style.display = 'flex';
       }
     });
