@@ -34,10 +34,10 @@ args = "HLS Player Dev Server"
 name = "HLS Player Dev Server"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "webview"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "bun run server.ts"
+args = "bun run --watch server.ts"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
