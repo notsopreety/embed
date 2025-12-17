@@ -963,7 +963,8 @@
     }
 
     function loadSubtitle(url) {
-      video.querySelectorAll('track').forEach(t => t.remove());
+      const existingTracks = video.querySelectorAll('track[kind="subtitles"]');
+      existingTracks.forEach(t => t.remove());
       if (url) {
         const track = document.createElement('track');
         track.kind = 'subtitles';
@@ -1043,7 +1044,8 @@
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           showLoading(false);
           populateQualityLevels();
-          populateSubtitles(source.tracks || []);
+          const subtitleTracks = audioType === 'dub' ? (streamData.sub?.tracks || []) : (source.tracks || []);
+          populateSubtitles(subtitleTracks);
           loadThumbnails(source.tracks || []);
           if (currentTime > 0) {
             video.currentTime = currentTime;
@@ -1076,7 +1078,8 @@
         video.src = hlsUrl;
         video.addEventListener('loadedmetadata', () => {
           showLoading(false);
-          populateSubtitles(source.tracks || []);
+          const subtitleTracks = audioType === 'dub' ? (streamData.sub?.tracks || []) : (source.tracks || []);
+          populateSubtitles(subtitleTracks);
           loadThumbnails(source.tracks || []);
           if (currentTime > 0) {
             video.currentTime = currentTime;
