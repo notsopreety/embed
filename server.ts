@@ -75,13 +75,48 @@ app.get('/proxy', async (req: Request, res: Response) => {
 
 app.get('/api/stream', async (req: Request, res: Response) => {
   try {
-    const response = await fetch('https://hianime-api-bzut.onrender.com/api/v1/stream?id=solo-leveling-18718::ep=114721&type=sub&server=hd-3');
-    const data = await response.json();
-    res.json(data);
+    const id = req.query.id as string || 'solo-leveling-18718::ep=114721';
+    const server = (req.query.server as string || 'hd-2').toLowerCase();
+    const [subResponse, dubResponse] = await Promise.all([
+      fetch(`https://hianime-api-bzut.onrender.com/api/v1/stream?id=${encodeURIComponent(id)}&type=sub&server=${server}`),
+      fetch(`https://hianime-api-bzut.onrender.com/api/v1/stream?id=${encodeURIComponent(id)}&type=dub&server=${server}`)
+    ]);
+    const subData = await subResponse.json();
+    const dubData = await dubResponse.json();
+    if (!subData.success || !dubData.success) {
+      return res.status(400).json({ error: 'Failed to fetch one or both stream versions' });
+    }
+    const mergedResponse = {
+      success: true,
+      data: {
+        id: id,
+        sub: {
+          type: 'sub',
+          link: subData.data.link,
+          tracks: subData.data.tracks || [],
+          intro: subData.data.intro,
+          outro: subData.data.outro,
+          server: subData.data.server
+        },
+        dub: {
+          type: 'dub',
+          link: dubData.data.link,
+          tracks: dubData.data.tracks || [],
+          intro: dubData.data.intro,
+          outro: dubData.data.outro,
+          server: dubData.data.server
+        }
+      }
+    };
+    res.json(mergedResponse);
   } catch (error) {
     console.error('API error:', error);
     res.status(500).json({ error: 'Failed to fetch stream data' });
   }
+});
+
+app.get('/embed/:id', (req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'embed.html'));
 });
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
